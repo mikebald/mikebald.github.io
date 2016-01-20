@@ -1,0 +1,237 @@
+<h3>Smith-Waterman Local Alignment</h3>
+<p>An implementation of the <a href="https://en.wikipedia.org/wiki/Smith%E2%80%93Waterman_algorithm">Smith-Waterman local sequence alignment algorithm</a>. It's a local alignment with respect to a scoring system. The input DNA is seen below the code.
+<br /><br />
+<pre>
+import java.io.*;
+import java.lang.Math;
+
+class Alignment
+{
+	public static final int GAP_SCORE = -3;
+	
+	public static int[][] similar = null;
+	public static int[][] align = null;
+	public static int slen_1, slen_2;
+
+	public static int bestVal, best_x, best_y;
+
+	public static int f_score;
+	public static String f1, f2;
+
+	public static void makeSimilarityMatrix()
+	{
+		similar = new int[ 4 ][ 4 ];
+		
+		similar[ 0 ][ 0 ] = 10 ;
+		similar[ 1 ][ 0 ] = -1 ;
+		similar[ 2 ][ 0 ] = -3 ;
+		similar[ 3 ][ 0 ] = -4 ;
+		similar[ 0 ][ 1 ] = -1 ;
+		similar[ 1 ][ 1 ] = 7 ;
+		similar[ 2 ][ 1 ] = -5 ;
+		similar[ 3 ][ 1 ] = -3 ;
+		similar[ 0 ][ 2 ] = -3 ;
+		similar[ 1 ][ 2 ] = -5 ;
+		similar[ 2 ][ 2 ] = 9 ;
+		similar[ 3 ][ 2 ] = 0 ;
+		similar[ 0 ][ 3 ] = -4 ;
+		similar[ 1 ][ 3 ] = -3 ;
+		similar[ 2 ][ 3 ] = 0 ;
+		similar[ 3 ][ 3 ] = 8 ;
+	}
+	
+	public static void printMatrix( int[][] matrix, String seq1, String seq2, int max_x, int max_y, boolean align )
+	{
+		if(align)
+		{	
+			for(int x = 0; x < slen_1; x++)
+				System.out.print( "\t" + seq1.charAt(x) );
+		
+			System.out.println(" ");
+		}
+	
+		for(int y = (align ? 1 : 0); y < max_y; y++)
+		{
+			System.out.print( seq2.charAt(y - (align ? 1 : 0) )  + "\t");
+				
+			for(int x = (align ? 1 : 0); x < max_x; x++)
+			{
+				System.out.print( matrix[x][y] + "\t" );
+			}
+			System.out.println("");
+		}
+	}
+	
+	public static void calculateMatrix( String seq1, String seq2 )
+	{
+		int choices[] = new int[3];
+		
+		align = new int[ slen_1 + 1 ][ slen_2 + 1 ];
+		
+		for(int x = 0; x < slen_1; x++)
+			align[x][0] = GAP_SCORE * x;
+		
+		for(int y = 0; y < slen_2; y++)
+			align[0][y] = GAP_SCORE * y;
+		
+		for(int x = 1; x <= slen_1; x++)
+			for(int y = 1; y <= slen_2; y++)
+			{
+				choices[0] = align[ x - 1 ][ y - 1 ] + similar[ getVal( seq1, x-1) ][ getVal( seq2, y-1) ];
+				choices[1] = align[x - 1][y] + GAP_SCORE;
+				choices[2] = align[x][y - 1] + GAP_SCORE;
+				align[x][y] = getMax( choices );
+
+				if ( align[x][y] > bestVal )
+				{
+					bestVal = align[x][y]; // Don't forget the GAP_SCORE padding
+					best_x = x;
+					best_y = y;
+				}
+			}
+	}
+	
+	public static int getMax( int[] in ) // Get max or return 0;
+	{
+		return Math.max( Math.max( in[0], in[1]), Math.max( in[2], 0 ) );
+	}
+	
+	public static int getVal(String seq, int index)
+	{
+		switch (seq.charAt(index))
+		{
+				case 'A': return 0;
+				case 'G': return 1;
+				case 'C': return 2;
+				case 'T': return 3;
+		}
+		return -1;
+	}
+
+	public static void showPath(String s1, String s2, boolean recordBest)
+	{
+		String new_s1 = "", new_s2 = "";
+		int i = slen_1, j = slen_2;
+		int score = 0, score_diag = 0, score_up = 0, score_left = 0;		
+
+		while( i > 0 && j > 0 )
+		{
+			score = align[i][j];
+			score_diag = align[i - 1][j - 1];
+			score_up = align[i][j - 1];
+			score_left = align[i - 1][j];
+
+			if(score == 0) // Dead End
+				break;
+			
+			// Going Diag
+			if( score == score_diag + similar[ getVal( s1, i-1) ][ getVal( s2, j-1) ] )
+			{
+				new_s1 = s1.charAt(i-1) + new_s1;
+				new_s2 = s2.charAt(j-1) + new_s2;
+				i--;
+				j--;
+			}
+			
+			// Going Left
+			else if( score == score_left + GAP_SCORE )
+			{
+				new_s1 = s1.charAt(i-1) + new_s1;
+				new_s2 = "-" + new_s2;
+				i--;
+			}
+
+			// Going Up
+			else if( score == score_up + GAP_SCORE )
+			{
+				new_s1 = "-" + new_s1;
+				new_s2 = s2.charAt(j-1) + new_s2;
+				j--;
+			}	
+		}
+
+		if(recordBest)
+		{
+			f1 = new_s1;
+			f2 = new_s2;
+		}
+
+		System.out.println( new_s1 );
+		System.out.println( new_s2 );
+	}
+	
+	public static void main(String[] args) throws IOException
+	{
+		f1 = "";
+		f2 = "";
+		f_score = 0;
+
+		if( args.length < 2 )
+		{
+			System.out.println( "Usage: java Alignment <sequence> <filename>" );
+			return;
+		}
+
+		BufferedReader linereader;
+		try
+		{
+			linereader = new BufferedReader(new FileReader(args[1]));
+		}
+		catch(FileNotFoundException e)
+		{
+			System.out.println("Error, file [" + args[1] + "] was not found!");
+			return;
+		}
+
+		String seq1 = "";
+		String seq2 = args[0]; // Input sequence
+		slen_2 = seq2.length();
+		
+		// Fill and Print Similarity Matrix
+		makeSimilarityMatrix ( );		
+		System.out.println("\nSimilarity Matrix : ");
+		printMatrix( similar, "    ", "    ", 4, 4, false);
+
+		while( (seq1 = linereader.readLine()) != null)
+		{
+			// Initialize Values
+			slen_1 = seq1.length();
+			bestVal = 0;
+			best_x = 0;
+			best_y = 0;
+		
+			// Fill and print Alignment Matrix
+			System.out.println("\nAlignment Matrix : ");
+			calculateMatrix( seq1, seq2 );
+			printMatrix( align, seq1, seq2, slen_1 + 1, slen_2 + 1 , true);
+
+			// Record Best Score
+			if( bestVal > f_score )
+			{
+				f_score = bestVal;
+				System.out.println("\nScore: " + bestVal + " [" + best_x +"][" + best_y + "]\n");
+				showPath( seq1, seq2, true);
+			}
+			else
+			{
+				System.out.println("\nScore: " + bestVal + " [" + best_x +"][" + best_y + "]\n");
+				showPath( seq1, seq2, false);
+			}
+		}
+		
+		System.out.println("=====================================");
+		System.out.println("Best Score: " + f_score);
+		System.out.println(" " + f1 + "\n " + f2);
+		
+	}
+}
+</pre>
+<br />
+<pre>
+GTACGGTTAACCGTACAGTGAC
+TAGCTAGGCTGATATCGATCCGA
+CGATCGAGCAC
+GTAGCGGCATTCGAAAA
+GCGTACCAGGTAGC
+</pre>
+</p>

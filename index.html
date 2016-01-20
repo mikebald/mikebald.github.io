@@ -4,11 +4,11 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <title>MikeBald's GitHub.io Page</title>
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/github-dark.css">
+    <link rel="stylesheet" type="text/css" href="stylesheets/styles.css" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-dark.css" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascripts/respond.js"></script>
-    <script src="javascripts/template.js"></script>
+    <script src="js/template.js"></script>
+    
     <!--[if lt IE 9]>
       <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
@@ -19,13 +19,18 @@
         var templateString = "<h3>${Header}</h3><p>${Body}</p>";
         var objWelcome = { "Header": "Welcome to MikeBald's GitHub.io Page", "Body" : "This page is simply meant as a repository of different snippets, ideas, projects and basically anything I deem worthy of writing down. If this page is ever updated, it will be updated sporatically and without notice; so tread lightly and enjoy the ride."};
         var objPosts = { "Header": "Posts", 
-                         "Posts" : [{ "Title":  "Simple Template Engine [JS]", "URL": "posts/template_engine.html" }],
-                         "PostTemplate" : '<a class="post" href="${URL}">${Title}</a>',
+                         "Posts" : [{ "Title":  "Simple Template Engine [JS]", "URL": "posts/template_engine.html" },
+                                    { "Title":  "JSON to CSV [JS]", "URL": "posts/json_to_csv.html" },
+                                    { "Title":  "Standard Blocked IP Addresses [SERVER]", "URL": "posts/blocked_ips.html" },
+                                    { "Title":  "TPC-H v2.3.0 Implementation [SQL]", "URL": "posts/db_tpch.html" },
+                                    { "Title":  "Smith-Waterman Local Alignment [JAVA]", "URL": "posts/smith_waterman_alignment.html" },
+                                    { "Title":  "Winamp Control [C]", "URL": "posts/winamp_control.html" }],
+                         "PostTemplate" : '<img src="images/bullet.png" /> <a class="post" href="${URL}">${Title}</a>',
                          "PostSpacer" : "<br />",
                          "Body": function(obj) {
                             var html = "";
                             $.each(obj.Posts, function(k,v) {
-                                html += Template(obj.PostTemplate, v);
+                                html += Template(obj.PostTemplate, v) + obj.PostSpacer;
                             });
                             return html;
                          }
@@ -39,6 +44,7 @@
             $(document).on("click", "a.post", function(e) { 
                 e.preventDefault();
                 $("#post_body").load(this.href);
+                window.setTimeout(SyntaxHighlighter.all, 5);
             });
         });
         

@@ -1,2 +1,26 @@
 <h3>Simple Template Engine</h3>
-<p>The Simple Template Engine is a short and simple template engine I built in JS that targets a page that's already running jQuery. My inspiration came from a <a href="http://stephenwalther.com/archive/2010/11/30/an-introduction-to-jquery-templates">blog post by Stephen Walther titled "An Introduction to jQuery Templates"</a>. I enjoyed the simple syntax and had an idea as to how I could make a considerably powerful templatting engine in a small amount of code. That code can be found on my github page found <a href="https://github.com/mikebald/Simple-Template-Engine">here</a> or you can view the source for this page and grab the template.js file.</p>
+<p>The Simple Template Engine is a short and simple template engine I built in JS that targets a page that's already running jQuery. My inspiration came from a <a href="http://stephenwalther.com/archive/2010/11/30/an-introduction-to-jquery-templates">blog post by Stephen Walther titled "An Introduction to jQuery Templates"</a>. I enjoyed the simple syntax he outlined and I had an idea as to how I could make a considerably powerful templatting engine in a small amount of code. That code can be found on my github page found <a href="https://github.com/mikebald/Simple-Template-Engine">here</a> or you can view the source for this page and grab the template.js file.
+<br /><br />
+Here's the code that makes up the template engine:
+<br />
+<pre class="brush: js">
+var Template = function(templateString, obj) {
+    var match = false;
+    $.each(obj, function(k, v) {
+        var keyStr = "${" + k + "}";
+        if(templateString.indexOf(keyStr) !== -1) {
+            match = true;
+            if(typeof v === "function"){
+                v = v(obj);
+            }
+            templateString = templateString.split(keyStr).join(v);
+        }
+    });
+    if(match) {
+        return Template(templateString, obj);  
+    } else {
+        return templateString;
+    }
+};
+</pre>
+</p>

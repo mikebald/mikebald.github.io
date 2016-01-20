@@ -1,0 +1,222 @@
+<h3>Winamp Control</h3>
+<p> This is a console application in C that I wrote for the Samurize crowd so they could control Winamp from the command-line. It's not pretty, but it works; I had hoped that someone else would take what I did an just improve upon it.
+<br /><br />
+<pre>
+#include &lt;windows.h&gt;
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+using namespace std;
+
+const long cPrevTrack = 40044;           // Previous track button
+const long cNextTrack = 40048;           // Next track button
+const long cStartPlay = 40045;           // Play button
+const long cPausePlay = 40046;           // Pause/Unpause button
+const long cStopPlay = 40047;            // Stop button
+const long cFadeAndStop = 40147;         // Fadeout and stop
+const long cStopAfterTrack = 40157;      // Stop after current track
+const long cForward5Secs = 40148;        // Fast-forward 5 seconds
+const long cRewind5Secs = 40144;         // Fast-rewind 5 seconds
+const long cStartOfPlaylist = 40154;     // Start of playlist
+const long cEndOfPlaylist = 40158;       // Go to end of playlist
+const long cRaiseVol = 40058;            // Raise volume by 1%
+const long cLowerVol = 40059;            // Lower volume by 1%
+const long cExecuteVisualPlugin = 40192; // Execute current visualization plug-in
+const long cShowMainWindow = 40258;      // Toggle main window visible
+const long cConfigureVisual = 40221;     // Configure current visualization plug-in
+const long cReloadSkin = 40291;          // Reload the current skin
+const long cCloseWinamp = 40001;         // Close Winamp
+const long cPrev10Tracks = 40197;        // Moves back 10 tracks in playlist
+const long cAddTrackAsBook = 40321;      // Adds current track as a bookmark
+const long cPlayAudioCD = 40323;         // Play audio CD
+const long cLoadPresetFromEQ = 40253;    // Load a preset from EQ
+const long cSavePresetToEQ = 40254;      // Save a preset to EQF
+const long cLoadDefaultPreset = 40174;   // Load default preset
+const long cToggleTimeElapsed = 40037;   // Set time display mode to elapsed
+const long cToggleTimeRemaining = 40038; // Set time display mode to remaining
+const long cTogglePrefs = 40012;         // Toggle preferences screen
+const long cToggleAbout = 40041;         // Toggle about box
+const long cToggleTitleScroll = 40189;   // Toggle title Autoscrolling
+const long cToggleOnTop = 40019;         // Toggle always on top
+const long cToggleMainShade = 40064;     // Toggle Windowshade
+const long cTogglePLShade = 40266;       // Toggle Playlist Windowshade
+const long cToggleDoubleSize = 40165;    // Toggle doublesize mode
+const long cToggleEQ = 40036;            // Toggle EQ
+const long cTogglePlaylist = 40040;      // Toggle playlist editor
+const long cToggleMiniBrows = 40298;     // Toggle minibrowser
+const long cToggleEasymove = 40186;      // Toggle easymove
+const long cToggleRepeat = 40022;        // Toggle repeat
+const long cToggleShuffle = 40023;       // Toggle shuffle
+const long cOpenFile = 40029;            // Open file dialog
+const long cOpenURL = 40155;             // Open URL dialog
+const long cOpenFileInfo = 40188;        // Open file info box
+const long cOpenPlugOpts = 40190;        // Open visualization options
+const long cOpenVisualPlugOpts = 40191;  // Open visualization plug-in options
+const long cOpenJumptoTime = 40193;      // Open jump to time dialog
+const long cOpenJumptoFile = 40194;      // Open jump to file dialog
+const long cOpenSkinSel = 40219;         // Open skin selector
+const long cOpenEditBookmarks = 40320;   // Show the edit bookmarks
+const long cOpenLoadPreset = 40172;      // Opens load presets dialog
+const long cOpenAutoLoadPresets = 40173; // Opens auto-load presets dialog
+const long cOpenSavePreset = 40175;      // Opens save preset dialog
+const long cOpenAutoLoadPreset = 40176;  // Opens auto-load save preset
+const long cOpenDeletePreset = 40178;    // Opens delete preset dialog
+const long cOpenDeleteAutoLoad = 40180;  // Opens delete an auto load preset dialog
+HWND hwndWinamp;
+
+void sendMsg(long ID) {
+	long x = SendMessage(hwndWinamp, WM_COMMAND, ID, NULL);
+}
+
+void showPlaybackStatus() {
+	int ret=SendMessage(hwndWinamp,WM_USER, 0, 104);
+	if(ret == 1) {
+		cout &lt;&lt; "Playing";
+	} else if(ret == 3) {
+		cout &lt;&lt; "Paused";
+	} else {
+		cout &lt;&lt; "Stopped";
+	}
+}
+
+void showPlayingTime() {
+	int ret=SendMessage(hwndWinamp,WM_USER, 0, 105);
+	ret = ret / 1000;
+	int min = ret / 60;
+	int sec = ret - min*60;
+	if(sec &lt; 10)
+		cout &lt;&lt; min &lt;&lt; ":" &lt;&lt; "0" &lt;&lt; sec;
+	else
+		cout &lt;&lt; min &lt;&lt; ":" &lt;&lt; sec;
+}
+
+void showPlayingLength() {
+	int ret=SendMessage(hwndWinamp,WM_USER, 1, 105);
+	int min = ret/60;
+	int sec = ret - min*60;
+	if(sec &lt; 10)
+		cout &lt;&lt; min &lt;&lt; ":" &lt;&lt; "0" &lt;&lt; sec;
+	else
+		cout &lt;&lt; min &lt;&lt; ":" &lt;&lt; sec;
+}
+
+void showPlaylistSize() {
+	int ret=SendMessage(hwndWinamp,WM_USER, 1, 124);
+	cout &lt;&lt; ret;
+}
+
+void showBitRate() {
+	int ret=SendMessage(hwndWinamp,WM_USER, 1, 126);
+	cout &lt;&lt; ret;
+}
+
+void showSampleRate() {
+	int ret=SendMessage(hwndWinamp,WM_USER, 0, 126);
+	cout &lt;&lt; ret*1000;
+}
+
+void showRepeatToggle() {
+	int ret=SendMessage(hwndWinamp,WM_USER, 0, 251);
+	if(ret == 1)
+		cout &lt;&lt; "On";
+	else
+		cout &lt;&lt; "Off";
+}
+
+void showShuffleToggle() {
+	int ret=SendMessage(hwndWinamp,WM_USER, 0, 250);
+	if(ret == 1)
+		cout &lt;&lt; "On";
+	else
+		cout &lt;&lt; "Off";
+}
+
+void showTitle() {
+	char this_title[2048],*p;
+	GetWindowText(hwndWinamp,this_title,sizeof(this_title));
+	p = this_title+strlen(this_title)-8;
+	while (p &gt;= this_title)
+	{
+		if (!strnicmp(p,"- Winamp",8)) break;
+		p--;
+	}
+	if (p &gt;= this_title) p--;
+	while (p &gt;= this_title && *p == ' ') p--;
+	*++p=0;
+	cout &lt;&lt; this_title;
+}	
+
+void main(long argc, char *argv[]) {
+    hwndWinamp = FindWindow("Winamp v1.x", NULL);
+	string x = "";
+	if(argc &gt; 1) { x = argv[1]; }
+
+
+	if(x == "play") { sendMsg(cStartPlay); }
+	else if(x == "stop")             { sendMsg(cStopPlay); }
+	else if(x == "pause")            { sendMsg(cPausePlay); }
+	else if(x == "next")             { sendMsg(cNextTrack);	}
+	else if(x == "prev")             { sendMsg(cPrevTrack); }
+	else if(x == "vol_up")           { sendMsg(cRaiseVol); }
+	else if(x == "vol_down")         { sendMsg(cLowerVol); }
+	else if(x == "stop_with_fade")	 { sendMsg(cFadeAndStop); }
+	else if(x == "toggle_playlist")	 { sendMsg(cTogglePlaylist); }
+	else if(x == "toggle_eq")        { sendMsg(cToggleEQ); }
+	else if(x == "toggle_shuffle")   { sendMsg(cToggleShuffle); }
+	else if(x == "toggle_repeat")    { sendMsg(cToggleRepeat); }
+	else if(x == "forward_5_seconds"){ sendMsg(cForward5Secs); }
+	else if(x == "rewind_5_seconds") { sendMsg(cRewind5Secs); }
+	else if(x == "open_file")        { sendMsg(cOpenFile); }
+	else if(x == "show_winamp")      { sendMsg(cShowMainWindow); }
+	else if(x == "open_url")         { sendMsg(cOpenURL); }
+	else if(x == "open_file")        { sendMsg(cOpenFile); }
+	else if(x == "play_audiocd")     { sendMsg(cPlayAudioCD); }	
+	else if(x == "visualization")    { sendMsg(cExecuteVisualPlugin); }
+	else if(x == "stop_when_done")   { sendMsg(cStopAfterTrack); }
+	else if(x == "get_title")		 { showTitle(); }
+	else if(x == "get_status")		 { showPlaybackStatus(); }
+	else if(x == "get_playlength")	 { showPlayingLength(); }
+	else if(x == "get_playtime")	 { showPlayingTime(); }
+	else if(x == "get_playlistsize") { showPlaylistSize(); }
+	else if(x == "get_bitrate")      { showBitRate(); }
+	else if(x == "get_samplerate")   { showSampleRate(); }
+	else if(x == "get_shuffletoggle"){ showShuffleToggle(); }
+	else if(x == "get_repeattoggle"){ showRepeatToggle(); }
+	else {
+		cout &lt;&lt; "Arguments : " &lt;&lt; endl;
+		cout &lt;&lt; "	play" &lt;&lt; endl;
+		cout &lt;&lt; "	stop" &lt;&lt; endl;
+		cout &lt;&lt; "	pause" &lt;&lt; endl;
+		cout &lt;&lt; "	next" &lt;&lt; endl;
+		cout &lt;&lt; "	prev" &lt;&lt; endl;
+		cout &lt;&lt; "	vol_up" &lt;&lt; endl;
+		cout &lt;&lt; "	vol_down" &lt;&lt; endl;
+		cout &lt;&lt; "	stop_with_fade" &lt;&lt; endl;
+		cout &lt;&lt; "	toggle_playlist" &lt;&lt; endl;
+		cout &lt;&lt; "	toggle_eq" &lt;&lt; endl;
+		cout &lt;&lt; "	toggle_shuffle" &lt;&lt; endl;
+		cout &lt;&lt; "	toggle_repeat" &lt;&lt; endl;
+		cout &lt;&lt; "	forward_5_seconds" &lt;&lt; endl;
+		cout &lt;&lt; "	rewind_5_seconds" &lt;&lt; endl;
+		cout &lt;&lt; "	open_file" &lt;&lt; endl;
+		cout &lt;&lt; "	show_winamp" &lt;&lt; endl;
+		cout &lt;&lt; "	open_url" &lt;&lt; endl;
+		cout &lt;&lt; "	open_file" &lt;&lt; endl;
+		cout &lt;&lt; "	play_audiocd" &lt;&lt; endl;
+		cout &lt;&lt; "	visualization" &lt;&lt; endl;
+		cout &lt;&lt; "	stop_when_done" &lt;&lt; endl;
+		cout &lt;&lt; "	get_title" &lt;&lt; endl;
+		cout &lt;&lt; "	get_status" &lt;&lt; endl;
+		cout &lt;&lt; "	get_playlength" &lt;&lt; endl;
+		cout &lt;&lt; "	get_playtime" &lt;&lt; endl;
+		cout &lt;&lt; "	get_playlistsize" &lt;&lt; endl;
+		cout &lt;&lt; "	get_bitrate" &lt;&lt; endl;
+		cout &lt;&lt; "	get_samplerate" &lt;&lt; endl;
+		cout &lt;&lt; "	get_shuffletoggle" &lt;&lt; endl;
+		cout &lt;&lt; "	get_repeattoggle" &lt;&lt; endl &lt;&lt; endl;
+		cout &lt;&lt; "::   post to the forums if you want any more functionality    ::" &lt;&lt; endl;
+		cout &lt;&lt; "::         (make surey you explain what you want :-p)         ::" &lt;&lt; endl;
+		cout &lt;&lt; ":: Note: a select few functions only work in winamp ver 2.5+  ::" &lt;&lt; endl;
+	}
+}
+</pre>
+</p>
