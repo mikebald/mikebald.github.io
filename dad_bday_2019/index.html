@@ -1,0 +1,74 @@
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Dad's Birthday 2019 Project</title>
+    <link rel="stylesheet" type="text/css" href="../stylesheets/styles.css" />
+    <link rel="stylesheet" type="text/css" href="../stylesheets/github-dark.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="../js/template.js"></script>
+    
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="../stylesheets/ie.css">
+    <![endif]-->
+    <script>
+        var templateString = "<h3>${Header}</h3><p>${Body}</p>";
+        var objWelcome = { "Header": "Dad's 2019 Birthday Project", "Body" : "Creation of Dad's 2019 analog clock project; from design up."};
+        var objPosts = { "Header": "Steps", 
+                         "Posts" : [{ "Title":  "Volt Meters Used - 200v Panel Meters", "HTML": "<img src='volt_meters.jpg' />"},
+                                    { "Title":  "Microchip Used - Arduino Nano", "HTML": "<img src='arduino_nano.jpg' />"},
+									{ "Title":  "Realtime Clock Used - Tiny RTC", "HTML": "<img src='rtc.jpg' />"},
+									{ "Title":  "Rewiring Volt Meters", "HTML": "<img src='meter_rewire.jpg' />"},
+									{ "Title":  "Volt Meter Face Update", "HTML": "<img src='meter_newcover.jpg' />"},
+									{ "Title":  "Designing Clock Face", "HTML": "<img src='sketch_face.png' />"},
+									{ "Title":  "Animated Clock Design", "HTML": "<img src='clock_build.apng' />"},
+									{ "Title":  "Print Failures", "HTML": "<img src='failures.jpg' />"}
+									],
+                         "PostTemplate" : '<img src="../images/bullet.png" /> <a class="post" href="#" data-img="${HTML}">${Title}</a>',
+                         "PostSpacer" : "<br />",
+                         "Body": function(obj) {
+                            var html = "";
+                            $.each(obj.Posts, function(k,v) {
+                                html += Template(obj.PostTemplate, v) + obj.PostSpacer;
+                            });
+                            return html;
+                         }
+                        };
+        
+        $(function() { 
+            // Load base page
+            $("#welcome").html( Template(templateString, objWelcome) );
+            $("#posts").html( Template(templateString, objPosts) );
+            
+            $(document).on("click", "a.post", function(e) { 
+                e.preventDefault();
+                $("#post_body").html($(this).data("img"));
+                window.setTimeout(SyntaxHighlighter.all, 5);
+            });
+        });
+        
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  </head>
+  <body>
+    <div class="wrapper">
+      <section>
+        <div id="title">
+          <h1>MikeBald on GitHub.io</h1>
+          <hr>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Original theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+        </div>
+        <div id="welcome"></div>
+        <div id="posts"></div>
+        <div id="post_body"></div>
+      </section>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
