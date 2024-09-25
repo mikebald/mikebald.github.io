@@ -20,7 +20,6 @@
             position: relative;
         }
         .hat-preview {
-            width: 200px;
             margin: 20px auto;
             position: relative;
             background-color: #fff;
@@ -28,8 +27,8 @@
         .body {
             width: 100%;
             background-color: #ff0000;
-            border-top-left-radius: 100px;
-            border-top-right-radius: 100px;
+            border-top-left-radius: 50%;
+            border-top-right-radius: 50%;
             position: absolute;
             top: 0;
         }
@@ -45,7 +44,7 @@
         }
         .scale {
             position: absolute;
-            left: -50px;
+            left: 70px;
             bottom: 0;
             height: 100%;
             display: flex;
@@ -87,9 +86,9 @@
             <div class="form-group">
                 <label for="hat-size">Select Hat Size:</label>
                 <select id="hat-size" onchange="updateHatSize()">
-                    <option value="baby" data-brim="72" data-height="288">Baby (Brim: 1.5", Height: 6")</option>
-                    <option value="kid" data-brim="96" data-height="336">Kid (Brim: 2", Height: 7")</option>
-                    <option value="adult" data-brim="120" data-height="432">Adult (Brim: 2.5", Height: 9")</option>
+                    <option value="baby" data-width="192" data-brim="72" data-height="288">Baby (Brim: 1.5", Height: 6", Width: 4")</option>
+                    <option value="kid" data-width="288" data-brim="96" data-height="336">Kid (Brim: 2", Height: 7", Width: 6")</option>
+                    <option value="adult" data-width="384" data-brim="120" data-height="432">Adult (Brim: 2.5", Height: 9", Width: 8")</option>
                 </select>
             </div>
 
@@ -113,7 +112,7 @@
             </div>
         </form>
 
-        <div class="hat-preview-container">
+        <div class="hat-preview-container" id="hat-preview-container">
             <div class="scale" id="inch-scale"></div>
             <div class="hat-preview" id="hat-preview">
                 <div class="body" id="hat-body"></div>
@@ -131,21 +130,23 @@
         function updateHatSize() {
             const hatSizeElement = document.getElementById('hat-size');
             const selectedSize = hatSizeElement.options[hatSizeElement.selectedIndex];
-            const brimHeight = parseInt(selectedSize.getAttribute('data-brim'));  // In pixels
-            const totalHeight = parseInt(selectedSize.getAttribute('data-height'));  // In pixels
+            const width = parseInt(selectedSize.getAttribute('data-width'));  // Width in pixels
+            const brimHeight = parseInt(selectedSize.getAttribute('data-brim'));  // Brim height in pixels
+            const totalHeight = parseInt(selectedSize.getAttribute('data-height'));  // Total height in pixels
 
             const hatBrim = document.getElementById('hat-brim');
             const hatBody = document.getElementById('hat-body');
             const hatPreview = document.getElementById('hat-preview');
 
-            // Set brim and body heights in pixels
+            // Set the width and height of the hat
+            hatPreview.style.width = `${width}px`;
             hatBrim.style.height = `${brimHeight}px`;
             hatBody.style.height = `${totalHeight - brimHeight}px`;
 
             // Set the overall hat-preview height to match the total height (body + brim)
             hatPreview.style.height = `${totalHeight}px`;
 
-            // Update the scale (inches) on the side
+            // Update the scale (inches) on the side and invert it
             updateInchScale(totalHeight / PIXELS_PER_INCH);
 
             updateHatColors();
@@ -168,7 +169,8 @@
             const inchScale = document.getElementById('inch-scale');
             inchScale.innerHTML = ''; // Clear any existing scale markers
 
-            for (let i = 0; i <= totalInches; i++) {
+            // Invert the scale so that 0 is at the bottom and increments go upward
+            for (let i = totalInches; i >= 0; i--) {
                 const scaleMark = document.createElement('div');
                 scaleMark.textContent = `${i}"`;
                 inchScale.appendChild(scaleMark);
