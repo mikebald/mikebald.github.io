@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beanie Hat Color Selector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .hat-preview-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            position: relative;
+        }
+        .hat-preview {
+            width: 200px;
+            margin: 20px auto;
+            position: relative;
+            background-color: #fff;
+        }
+        .body {
+            width: 100%;
+            background-color: #ff0000;
+            border-top-left-radius: 100px;
+            border-top-right-radius: 100px;
+            position: absolute;
+            top: 0;
+        }
+        .brim {
+            width: 100%;
+            background-color: #000000;
+            position: absolute;
+            bottom: 0;
+        }
+        .stripe {
+            position: absolute;
+            width: 100%;
+        }
+        .scale {
+            position: absolute;
+            left: -50px;
+            bottom: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .scale div {
+            text-align: right;
+            margin-bottom: 0;
+        }
+        input[type="color"] {
+            margin-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .arrow-buttons {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin-left: 10px;
+        }
+        .arrow-buttons button {
+            cursor: pointer;
+            padding: 5px;
+            margin: 2px;
+        }
+        .stripe-group {
+            display: flex;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Beanie Hat Color Selector</h1>
+        
+        <form id="hat-form">
+            <div class="form-group">
+                <label for="hat-size">Select Hat Size:</label>
+                <select id="hat-size" onchange="updateHatSize()">
+                    <option value="baby" data-brim="72" data-height="288">Baby (Brim: 1.5", Height: 6")</option>
+                    <option value="kid" data-brim="96" data-height="336">Kid (Brim: 2", Height: 7")</option>
+                    <option value="adult" data-brim="120" data-height="432">Adult (Brim: 2.5", Height: 9")</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="brim-color">Select Brim Color:</label>
+                <input type="color" id="brim-color" value="#000000" onchange="updateHatColors()">
+            </div>
+
+            <div class="form-group">
+                <label for="body-color">Select Body Color:</label>
+                <input type="color" id="body-color" value="#ff0000" onchange="updateHatColors()">
+            </div>
+
+            <div id="stripe-container">
+                <h3>Stripes</h3>
+                <button type="button" onclick="addStripe()">Add Stripe</button>
+            </div>
+
+            <div class="form-group">
+                <button type="button" onclick="generateURL()">Generate Bookmarkable URL</button>
+            </div>
+        </form>
+
+        <div class="hat-preview-container">
+            <div class="scale" id="inch-scale"></div>
+            <div class="hat-preview" id="hat-preview">
+                <div class="body" id="hat-body"></div>
+                <div class="brim" id="hat-brim"></div>
+            </div>
+        </div>
+
+        <p>Bookmarkable URL: <span id="bookmark-url"></span></p>
+    </div>
+
+    <script>
+        let stripes = [];
+        const PIXELS_PER_INCH = 48;  // Updated conversion factor
+
+        function updateHatSize() {
+            const hatSizeElement = document.getElementById('hat-size');
+            const selectedSize = hatSizeElement.options[hatSizeElement.selectedIndex];
+            const brimHeight = parseInt(selectedSize.getAttribute('data-brim'));  // In pixels
+            const totalHeight = parseInt(selectedSize.getAttribute('data-height'));  // In pixels
+
+            const hatBrim = document.getElementById('hat-brim');
+            const hatBody = document.getElementById('hat-body');
+            const hatPreview = document.getElementById('hat-preview');
+
+            // Set brim and body heights in pixels
+            hatBrim.style.height = `${brimHeight}px`;
+            hatBody.style.height = `${totalHeight - brimHeight}px`;
+
+            // Set the overall hat-preview height to match the total height (body + brim)
+            hatPreview.style.height = `${totalHeight}px`;
+
+            // Update the scale (inches) on the side
+            updateInchScale(totalHeight / PIXELS_PER_INCH);
+
+            updateHatColors();
+        }
+
+        function updateHatColors() {
+            const brimColor = document.getElementById('brim-color').value;
+            const bodyColor = document.getElementById('body-color').value;
+
+            const hatBrim = document.getElementById('hat-brim');
+            const hatBody = document.getElementById('hat-body');
+
+            hatBrim.style.backgroundColor = brimColor;
+            hatBody.style.backgroundColor = bodyColor;
+
+            updateStripes();
+        }
+
+        function updateInchScale(totalInches) {
+            const inchScale = document.getElementById('inch-scale');
+            inchScale.innerHTML = ''; // Clear any existing scale markers
+
+            for (let i = 0; i <= totalInches; i++) {
+                const scaleMark = document.createElement('div');
+                scaleMark.textContent = `${i}"`;
+                inchScale.appendChild(scaleMark);
+            }
+        }
+
+        function addStripe(color = '#00ff00', height = 1, top = 0) {
+            const stripeId = stripes.length;
+            const stripeContainer = document.getElementById('stripe-container');
+
+            const stripeDiv = document.createElement('div');
+            stripeDiv.className = "form-group stripe-group";
+            stripeDiv.innerHTML = `
+                <label>Stripe ${stripeId + 1} Color:</label>
+                <input type="color" id="stripe-color-${stripeId}" value="${color}" onchange="updateHatColors()">
+                <label>Height (inches):</label>
+                <input type="number" id="stripe-height-${stripeId}" value="${height}" min="0.5" max="2" step="0.5" onchange="updateHatColors()">
+                <div class="arrow-buttons">
+                    <button type="button" onclick="moveStripe(${stripeId}, 'up')">⬆️</button>
+                    <button type="button" onclick="moveStripe(${stripeId}, 'down')">⬇️</button>
+                </div>
+                <button type="button" onclick="removeStripe(${stripeId})">Remove Stripe</button>
+            `;
+            stripeContainer.appendChild(stripeDiv);
+
+            stripes.push({ id: stripeId, color, height, top });
+
+            updateHatColors();
+        }
+
+        function removeStripe(id) {
+            stripes = stripes.filter(stripe => stripe.id !== id);
+            document.getElementById(`stripe-color-${id}`).parentNode.remove();
+            updateHatColors();
+        }
+
+        function updateStripes() {
+            const hatPreview = document.getElementById('hat-preview');
+            // Remove all current stripe elements
+            document.querySelectorAll('.stripe').forEach(stripe => stripe.remove());
+
+            stripes.forEach(stripe => {
+                const color = document.getElementById(`stripe-color-${stripe.id}`).value;
+                const height = parseFloat(document.getElementById(`stripe-height-${stripe.id}`).value) * PIXELS_PER_INCH;
+
+                const stripeElement = document.createElement('div');
+                stripeElement.className = 'stripe';
+                stripeElement.style.backgroundColor = color;
+                stripeElement.style.height = `${height}px`;
+                stripeElement.style.top = `${stripe.top}px`;
+                stripeElement.style.position = 'absolute';
+                hatPreview.appendChild(stripeElement);
+            });
+        }
+
+        function moveStripe(id, direction) {
+            const index = stripes.findIndex(stripe => stripe.id === id);
+            const movement = 0.5 * PIXELS_PER_INCH;  // 0.5 inch step in pixels
+
+            if (direction === 'up' && stripes[index].top - movement >= 0) {
+                stripes[index].top -= movement;
+            } else if (direction === 'down' && stripes[index].top + movement <= parseInt(document.getElementById('hat-preview').offsetHeight) - movement) {
+                stripes[index].top += movement;
+            }
+
+            updateHatColors();
+        }
+
+        function generateURL() {
+            const hatSize = document.getElementById('hat-size').value;
+            const brimColor = document.getElementById('brim-color').value.substring(1);
+            const bodyColor = document.getElementById('body-color').value.substring(1);
+
+            let stripeParams = stripes.map(stripe => {
+                const color = document.getElementById(`stripe-color-${stripe.id}`).value.substring(1);
+                const height = document.getElementById(`stripe-height-${stripe.id}`).value;
+                const top = stripe.top / PIXELS_PER_INCH;  // Convert back to inches for URL
+                return `${color}-${height}-${top}`;
+            }).join(',');
+
+            const url = `${window.location.origin}${window.location.pathname}?hatSize=${hatSize}&brimColor=${brimColor}&bodyColor=${bodyColor}&stripes=${stripeParams}`;
+            document.getElementById('bookmark-url').textContent = url;
+        }
+
+        function loadFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('hatSize')) {
+                const hatSize = urlParams.get('hatSize');
+                const brimColor = `#${urlParams.get('brimColor')}`;
+                const bodyColor = `#${urlParams.get('bodyColor')}`;
+                const stripesParam = urlParams.get('stripes').split(',');
+
+                document.getElementById('hat-size').value = hatSize;
+                document.getElementById('brim-color').value = brimColor;
+                document.getElementById('body-color').value = bodyColor;
+
+                stripes = [];
+                document.getElementById('stripe-container').innerHTML = '';
+
+                stripesParam.forEach(stripeData => {
+                    const [color, height, top] = stripeData.split('-');
+                    addStripe(`#${color}`, parseFloat(height), parseFloat(top) * PIXELS_PER_INCH);
+                });
+
+                updateHatSize();
+            }
+        }
+
+        window.onload = function() {
+            loadFromURL();
+            updateHatSize();
+        };
+    </script>
+</body>
+</html>
