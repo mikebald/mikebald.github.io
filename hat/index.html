@@ -44,7 +44,7 @@
         }
         .scale {
             position: absolute;
-            left: 70px;
+            left: -70px;
             bottom: 0;
             height: 100%;
             display: flex;
@@ -112,7 +112,7 @@
             </div>
         </form>
 
-        <div class="hat-preview-container" id="hat-preview-container">
+        <div class="hat-preview-container">
             <div class="scale" id="inch-scale"></div>
             <div class="hat-preview" id="hat-preview">
                 <div class="body" id="hat-body"></div>
@@ -120,7 +120,7 @@
             </div>
         </div>
 
-        <p>Bookmarkable URL: <span id="bookmark-url"></span></p>
+        <p>Bookmarkable URL: <a id="bookmark-url" href="#" target="_blank">No URL generated yet</a></p>
     </div>
 
     <script>
@@ -252,7 +252,11 @@
             }).join(',');
 
             const url = `${window.location.origin}${window.location.pathname}?hatSize=${hatSize}&brimColor=${brimColor}&bodyColor=${bodyColor}&stripes=${stripeParams}`;
-            document.getElementById('bookmark-url').textContent = url;
+
+            // Create clickable hyperlink for the bookmark URL
+            const bookmarkUrl = document.getElementById('bookmark-url');
+            bookmarkUrl.href = url;
+            bookmarkUrl.textContent = url;
         }
 
         function loadFromURL() {
